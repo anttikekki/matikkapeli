@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 
 const luoLaskutehtava = (kertotaulu: number) => {
@@ -8,28 +8,37 @@ const luoLaskutehtava = (kertotaulu: number) => {
 
 function Matikkapeli() {
   const [laskutehtava, asetaLakutehtava] = useState(luoLaskutehtava(2));
-  const [vastaus, asetaVastaus] = useState<string>();
+  const [vastaus, asetaVastaus] = useState<string>("");
   const [naytaVastaus, asetaNaytaVastaus] = useState<boolean>(false);
   const [onkoVastausOikein, asetaOnkoVastausOikein] = useState<boolean>(false);
+
+  const vastausRef = useRef<HTMLInputElement>(null);
+  const seuraavaTehtavaRef = useRef<HTMLButtonElement>(null);
 
   const luoUusiTehtava = () => {
     asetaLakutehtava(luoLaskutehtava(2));
     asetaVastaus("");
     asetaOnkoVastausOikein(false);
     asetaNaytaVastaus(false);
+    vastausRef.current?.focus();
   };
 
   const tarkistaTehtava = () => {
     if (vastaus) {
-      asetaOnkoVastausOikein(Number(vastaus) === laskutehtava.oikeaVastaus);
+      const vastausOnOikein = Number(vastaus) === laskutehtava.oikeaVastaus;
+      asetaOnkoVastausOikein(vastausOnOikein);
       asetaNaytaVastaus(true);
+
+      if (vastausOnOikein) {
+        seuraavaTehtavaRef.current?.focus();
+      }
     }
   };
 
   const { kertotaulu, kerroin } = laskutehtava;
 
   return (
-    <div className="App">
+    <div>
       <h1>Matikkapeli</h1>
       <form
         onSubmit={(event) => {
@@ -45,6 +54,7 @@ function Matikkapeli() {
         <div>
           <input
             type="number"
+            ref={vastausRef}
             value={vastaus}
             onChange={(e) => asetaVastaus(e.target.value)}
           />
@@ -62,7 +72,9 @@ function Matikkapeli() {
           <button type="submit" onClick={() => tarkistaTehtava()}>
             Tarkista tulos
           </button>
-          <button onClick={() => luoUusiTehtava()}>Seuraava tehtävä</button>
+          <button ref={seuraavaTehtavaRef} onClick={() => luoUusiTehtava()}>
+            Seuraava tehtävä
+          </button>
         </div>
       </form>
     </div>
